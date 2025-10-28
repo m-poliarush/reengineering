@@ -11,7 +11,7 @@ namespace EchoServer
     {
         private readonly int _port;
         private TcpListener _listener;
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
         //constuctor
         public EchoServer(int port)
@@ -84,7 +84,6 @@ namespace EchoServer
         public static async Task Main(string[] args)
         {
             EchoServer server = new EchoServer(5000);
-            // test
             // Start the server in a separate task
             _ = Task.Run(() => server.StartAsync());
 
