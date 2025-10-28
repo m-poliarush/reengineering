@@ -32,7 +32,7 @@ on:
   push:
     branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "lab1" ]
   workflow_dispatch:
 
 permissions:
