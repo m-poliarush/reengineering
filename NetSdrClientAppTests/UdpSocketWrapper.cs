@@ -46,12 +46,13 @@ namespace EchoServer.Tests
                 _wrapper.Dispose();
             }, "Повторний виклик Dispose не повинен кидати виключення.");
         }
+
         [Test]
         public void Send_ShouldSendPacket_InIntegrationTest()
         {
             int listenPort = 12346;
             var senderEndpoint = new IPEndPoint(IPAddress.Loopback, listenPort);
-            var receiver = new UdpClient(listenPort);
+            using var receiver = new UdpClient(listenPort);
             receiver.Client.ReceiveTimeout = 100;
 
             int bytesSent = _wrapper.Send(_testData, _testData.Length, senderEndpoint);
@@ -65,15 +66,14 @@ namespace EchoServer.Tests
             catch (SocketException)
             {
             }
-            finally
+            Assert.Multiple(() =>
             {
-                receiver.Close();
-                receiver.Dispose();
-            }
+                Assert.That(bytesSent, Is.EqualTo(_testData.Length), "Кількість відправлених байтів має збігатися з довжиною даних.");
 
-            Assert.That(bytesSent, Is.EqualTo(_testData.Length), "Кількість відправлених байтів має збігатися з довжиною даних.");
-            Assert.That(receivedBytes.Length, Is.EqualTo(_testData.Length), "Отриманий пакет має мати правильну довжину.");
-            Assert.That(receivedBytes, Is.EqualTo(_testData), "Отримані дані мають збігатися з відправленими.");
+                Assert.That(receivedBytes, Has.Length.EqualTo(_testData.Length), "Отриманий пакет має мати правильну довжину.");
+
+                Assert.That(receivedBytes, Is.EqualTo(_testData), "Отримані дані мають збігатися з відправленими.");
+            });
         }
     }
 }
