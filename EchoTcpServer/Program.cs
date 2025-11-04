@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 /// Not for a review
 /// </summary>
 /// 
-namespace EchoServer.Program
+namespace EchoServer
 {
     public class EchoServer
     {
         private readonly int _port;
-        private TcpListener _listener;
-        private CancellationTokenSource _cancellationTokenSource;
+        private TcpListener? _listener;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
 
         public EchoServer(int port)
