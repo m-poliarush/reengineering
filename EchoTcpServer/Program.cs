@@ -97,7 +97,7 @@ namespace EchoServer
             int port = 60000;          // Target Port
             int intervalMilliseconds = 5000; // Send every 3 seconds
 
-            using (var sender = new UdpTimedSender(host, port))
+            using (var sender = new UdpTimedSender(host, port, new UdpSocketWrapper()))
             {
                 Console.WriteLine("Press any key to stop sending...");
                 sender.StartSending(intervalMilliseconds);

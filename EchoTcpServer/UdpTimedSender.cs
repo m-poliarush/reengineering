@@ -12,15 +12,15 @@ namespace EchoServer
     {
         private readonly string _host;
         private readonly int _port;
-        private readonly UdpClient _udpClient;
+        private readonly IUdpSocket _udpClient;
         private Timer? _timer;
         private bool _disposed = false;
 
-        public UdpTimedSender(string host, int port)
+        public UdpTimedSender(string host, int port, IUdpSocket udpSocket)
         {
             _host = host;
             _port = port;
-            _udpClient = new UdpClient();
+            _udpClient = udpSocket;
         }
 
         public void StartSending(int intervalMilliseconds)
