@@ -11,6 +11,7 @@ namespace EchoServer
     public class UdpSocketWrapper : IUdpSocket
     {
         private readonly UdpClient _udpClient;
+        private bool _disposed = false;
 
         public UdpSocketWrapper()
         {
@@ -19,12 +20,29 @@ namespace EchoServer
 
         public int Send(byte[] dgram, int bytes, IPEndPoint endPoint)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(UdpSocketWrapper));
+            }
             return _udpClient.Send(dgram, bytes, endPoint);
         }
 
         public void Dispose()
         {
-            _udpClient.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-    }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _udpClient.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+        }
 }
