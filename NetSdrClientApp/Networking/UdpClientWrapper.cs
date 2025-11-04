@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class UdpClientWrapper : IUdpClient
+public class UdpClientWrapper : IUdpClient, IDisposable
 {
     private readonly IPEndPoint _localEndPoint;
     private CancellationTokenSource? _cts;
@@ -65,6 +65,7 @@ public class UdpClientWrapper : IUdpClient
         {
             _cts?.Cancel();
             _udpClient?.Close();
+            Dispose();
             Console.WriteLine("Stopped listening for UDP messages.");
         }
         catch (Exception ex)
@@ -81,5 +82,10 @@ public class UdpClientWrapper : IUdpClient
         var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(payload));
 
         return BitConverter.ToInt32(hash, 0);
+    }
+    public void Dispose()
+    {
+        _cts?.Dispose();
+
     }
 }
