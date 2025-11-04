@@ -13,7 +13,8 @@ namespace EchoServer
         private readonly string _host;
         private readonly int _port;
         private readonly UdpClient _udpClient;
-        private Timer _timer;
+        private Timer? _timer;
+        private bool _disposed = false;
 
         public UdpTimedSender(string host, int port)
         {
@@ -59,11 +60,22 @@ namespace EchoServer
             _timer?.Dispose();
             _timer = null;
         }
-
         public void Dispose()
         {
-            StopSending();
-            _udpClient.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    StopSending();
+                    _udpClient.Dispose();
+                }
+                _disposed = true;
+            }
         }
     }
 }
