@@ -1,10 +1,11 @@
 ﻿using Moq;
 using NUnit.Framework;
-using EchoServer; // Припускаємо, що інтерфейс там
+using EchoServer;
 using System;
 using System.Threading;
 using System.Net;
 using System.Linq;
+using System.Reflection;
 
 namespace EchoServerTests
 {
@@ -23,11 +24,16 @@ namespace EchoServerTests
             _sender = new UdpTimedSender(TestHost, TestPort, _udpMock.Object);
         }
 
-     
+        [TearDown]
+        public void Teardown()
+        {
+            _sender?.Dispose();
+            _sender = null!;
+        }
+
         [Test]
         public void ConstructorTest()
         {
-
             Assert.That(_sender, Is.Not.Null);
         }
 
@@ -38,7 +44,6 @@ namespace EchoServerTests
 
             Assert.Throws<InvalidOperationException>(() => _sender.StartSending(1000));
 
-            _sender.StopSending();
         }
 
         [Test]
@@ -52,29 +57,31 @@ namespace EchoServerTests
         [Test]
         public void SendMessageCallback_SendsData()
         {
-            Timer? testTimer = null;
+            var callbackMethod = typeof(UdpTimedSender).GetMethod(
+                "SendMessageCallback",
+                BindingFlags.NonPublic | BindingFlags.Instance
+            );
 
-            testTimer = new Timer((state) =>
-            {
-                _sender.GetType()
-                       .GetMethod("SendMessageCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-                       .Invoke(_sender, new object?[] { null });
-            }, null, Timeout.Infinite, Timeout.Infinite);
-
-            _sender.GetType()
-                   .GetMethod("SendMessageCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-                   .Invoke(_sender, new object?[] { null });
+            callbackMethod!.Invoke(_sender, new object?[] { null });
 
             _udpMock.Verify(
                 udp => udp.Send(
-                    It.Is<byte[]>(bytes => bytes.Length > 0),
-                    It.Is<int>(len => len > 0),
+                    It.Is<byte[]>(bytes => bytes.Length == 1028),
+                    It.Is<int>(len => len == 1028),
                     It.IsAny<IPEndPoint>()
                 ),
                 Times.Once,
-                "IUdpSocket.Send має бути викликаний один раз.");
+                "IUdpSocket.Send має бути викликаний один раз."
+            );
 
-            testTimer.Dispose();
+        }
+
+        [Test]
+        public void Dispose_CallsUdpClientDispose()
+        {
+            _sender.Dispose();
+
+            _udpMock.Verify(udp => udp.Dispose(), Times.Once, "Dispose має бути викликаний для IUdpSocket.");
         }
     }
 }
