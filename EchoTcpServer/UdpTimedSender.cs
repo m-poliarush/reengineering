@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace EchoServer
 {
-    public class UdpTimedSender : IDisposable
+    public class UdpTimedSender : DisposableBase
     {
         private readonly string _host;
         private readonly int _port;
         private readonly IUdpSocket _udpClient;
         private Timer? _timer;
-        private bool _disposed = false;
+
 
         public UdpTimedSender(string host, int port, IUdpSocket udpSocket)
         {
@@ -25,6 +25,7 @@ namespace EchoServer
 
         public void StartSending(int intervalMilliseconds)
         {
+            CheckDisposed();
             if (_timer != null)
                 throw new InvalidOperationException("Sender is already running.");
 
@@ -60,22 +61,10 @@ namespace EchoServer
             _timer?.Dispose();
             _timer = null;
         }
-        public void Dispose()
+        protected override void DisposeManagedResources()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    StopSending();
-                    _udpClient.Dispose();
-                }
-                _disposed = true;
-            }
+            StopSending();
+            _udpClient.Dispose();
         }
     }
 }

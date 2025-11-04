@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EchoServer
 {
-    public class UdpSocketWrapper : IUdpSocket
+    public class UdpSocketWrapper : DisposableBase, IUdpSocket
     {
         private readonly UdpClient _udpClient;
 
@@ -19,13 +19,13 @@ namespace EchoServer
 
         public int Send(byte[] dgram, int bytes, IPEndPoint endPoint)
         {
+            CheckDisposed();
             return _udpClient.Send(dgram, bytes, endPoint);
         }
-
-        public void Dispose()
+        protected override void DisposeManagedResources()
         {
             _udpClient.Dispose();
         }
-       
-        }
+        
+    }
 }
